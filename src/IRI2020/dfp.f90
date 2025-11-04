@@ -1,18 +1,14 @@
-      subroutine dfp(filename, path)
+      subroutine dfp(direct,filename, path)
          implicit none
-         character(len=*), intent(in)  :: filename
+         character(len=*), intent(in)  :: filename, direct
          character(len=256), intent(inout) :: path
 
          character(len=:), allocatable :: trimmed_dir
          integer :: dir_len
-         character(len=:), allocatable  :: direct
-
-         direct = IRI20DIR
 
          ! --- Trim leading/trailing blanks from directory ---
          trimmed_dir = trim(adjustl(direct))
          dir_len = len_trim(trimmed_dir)
-
          select case (dir_len)
           case (0)
             ! If directory is blank, just use filename (truncated/padded to 256)
@@ -32,5 +28,4 @@
          else if (len_trim(path) > 256) then
             path = path(1:256)
          end if
-
       end subroutine dfp

@@ -31,6 +31,9 @@ fortran_srcs = [
 
 py.install_sources(
     'src/iri20py/__init__.py',
+    'src/iri20py/base.py',
+    'src/iri20py/download.py',
+    'src/iri20py/utils.py',
     subdir: 'iri20py',
     pure: false,
 )
@@ -41,9 +44,43 @@ install_subdir(
     strip_directory: false,
 )
 
-shared_library('iri20pyfort',
+iri20_static = static_library('iri20',
   fortran_srcs,
-  fortran_args : ['-cpp', '-march=native', '-ffast-math', '-DIRI20DIR="'+join_paths(install_dir, 'data')+'"', '-std=legacy'],
+  fortran_args : ['-cpp', '-march=native', '-ffast-math', '-std=legacy'],
+  install : false,
+)
+
+incdir_numpy = run_command(py,
+  [
+    '-c',
+    'import numpy; print(numpy.get_include())'
+  ],
+  check: true
+).stdout().strip()
+
+incdir_f2py = run_command(py,
+    ['-c', 'import numpy.f2py; print(numpy.f2py.get_include())'],
+    check : true
+).stdout().strip()
+
+fortshim_srcs = [
+  'src/IRI2020/irishim.f90',
+]
+
+fortshim_tgt = custom_target('iri20shimmodule.c',
+  input : fortshim_srcs,
+  output : ['iri20shimmodule.c', 'iri20shim-f2pywrappers.f'],
+  command : [py, '-m', 'numpy.f2py', '@INPUT@', '-m', 'iri20shim', '--lower']
+)
+
+inc_np = include_directories(incdir_numpy, incdir_f2py)
+
+py.extension_module('iri20shim',
+  fortshim_srcs + [fortshim_tgt],
+  incdir_f2py / 'fortranobject.c',
+  include_directories: inc_np,
+  dependencies : py_dep,
+  link_with: [iri20_static],
   install : true,
-  install_dir: install_dir,
+  install_dir: install_dir
 )

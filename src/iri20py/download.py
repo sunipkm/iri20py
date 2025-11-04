@@ -19,25 +19,28 @@ IGRG = 'ig_rz.dat'
 
 TIMEOUT = 15  # seconds
 
-logger = logging.getLogger(__name__) # module logger
+logger = logging.getLogger(__name__)  # module logger
+
 
 def check_files():
     with importlib.resources.path(__package__, "__init__.py") as fn:
         path = fn.parent / "data"
         if not path.is_dir():
             raise NotADirectoryError(path)
-        
+
     # Check modification date of files
     for file in [APF7, IGRG]:
         will_download = False
         fpath = path / file
         if not fpath.is_file():
             will_download = True
-        finf = fpath.stat()
-        mod_date = datetime.fromtimestamp(finf.st_mtime)
-        if datetime.now() - mod_date > timedelta(days=1):
-            logger.warning(f"Warning: {file} is older than 1 day. Consider updating.")
-            will_download = True
+        else:
+            finf = fpath.stat()
+            mod_date = datetime.fromtimestamp(finf.st_mtime)
+            if datetime.now() - mod_date > timedelta(days=1):
+                logger.warning(
+                    f"Warning: {file} is older than 1 day. Consider updating.")
+                will_download = True
         if will_download:
             url = f'{URL}/{file}'
             try:
@@ -47,7 +50,8 @@ def check_files():
                 logger.error(e)
 
     if not (path / APF7).is_file() or not (path / IGRG).is_file():
-        raise FileNotFoundError("Required data files are missing after download attempt.")
+        raise FileNotFoundError(
+            "Required data files are missing after download attempt.")
 
 
 def download(url: str, fn: Path):
