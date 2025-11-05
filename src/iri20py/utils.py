@@ -42,19 +42,20 @@ def geocent_to_geodet(lat: Numeric | Iterable[Numeric], ell: Tuple[Numeric, Nume
     return arctan(b*tan(lat*M_PI/180)/a)*180/M_PI
 
 
-def glowdate(t: datetime) -> Tuple[int, Numeric]:
+def glowdate(t: datetime) -> Tuple[int, int, Numeric]:
     """## Convert datetime to GLOW date and UT seconds.
 
     ### Args:
         - `t (datetime)`: Datetime object.
 
     ### Returns:
-        - `Tuple[int, Numeric]`: GLOW date (YYYYDDD) and UT seconds.
+        - `Tuple[int, int, Numeric]`: year, day of year, and UT seconds.
     """
-    idate = int(f'{t.year:04}{t:%j}')
+    year = int(f'{t.year:04}')
+    idate = int(f'{t:%j}')
     utsec = (t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6)
 
-    return idate, utsec
+    return (year, idate, utsec)
 
 
 def nan_helper(y: ndarray) -> Tuple[ndarray, Callable[[ndarray], ndarray]]:

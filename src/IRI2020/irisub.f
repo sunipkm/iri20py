@@ -288,7 +288,7 @@ C*****************************************************************
 C
 C
        SUBROUTINE IRI_SUB(JF,JMAG,ALATI,ALONG,IYYYY,MMDD,DHOUR,
-     &    ZKM,NZKM,OUTF,OARR,DIRECT)
+     &    ZKM,NZKM,OUTF,OARR,DIRECT,LOGFILE)
 C-----------------------------------------------------------------
 C
 C INPUT:  JF(1:50)      true/false switches for several options
@@ -332,14 +332,14 @@ C   24    D-region: IRI-1990     FT-2001 and DRS-1995                t
 C   25    F107D from APF107.DAT  F107D user input (oarr(41))         t
 C   26    foF2 storm model       no storm updating                   t
 C   27    IG12 from file         IG12 user input (oarr(39))          t
-C   28    spread-F probability 	 not computed                        t
+C   28    spread-F probability 	 not computed                       t
 C   29    IRI01-topside          new options as def. by JF(30)       t
-C   30    IRI01-topside corr.    NeQuick topside model   	 false 
+C   30    IRI01-topside corr.    NeQuick topside model   	     false 
 C (29,30) = (t,t) IRIold, (f,t) IRIcor, (f,f) NeQuick, (t,f) IRIcor2
-C   31    B0,B1 ABT-2009	 B0 Gulyaeva-1987 h0.5               t   
+C   31    B0,B1 ABT-2009	 B0 Gulyaeva-1987 h0.5                    t   
 C (4,31) = (t,t) Bil-00, (f,t) ABT-09, (f,f) Gul-87, (t,f) not used
 C   32    F10.7_81 from file     F10.7_81 - user input (oarr(46))    t
-C   33    Auroral boundary model on/off  true/false	         false
+C   33    Auroral boundary model on/off  true/false	           false
 C   34    Messages on            Messages off                        t
 C   35    foE storm model        no foE storm updating           false
 C   36    hmF2 w/out foF2_storm  with foF2-storm                     t
@@ -349,15 +349,15 @@ C   39    hmF2 (M3000F2)         new models                      false
 C   40    hmF2 AMTB-model        Shubin-COSMIC model             false
 C (39,40) = (t,t) hmF2-old, (f,t) AMTB, (f,f) Shubin, (t,f) not used
 C   41    Use COV=F10.7_365      COV=f(IG12) (IRI before Oct 2015)   t
-C   42    Te with PF10.7 dep.	 w/o PF10.7 dependance               t
+C   42    Te with PF10.7 dep.	 w/o PF10.7 dependance                 t
 C   43    B0 from model          B0 - user input (OARR(10))          t
 C   44    B1 from model          B1 - user input (OARR(35))          t
 C   45    Es occ. prob on        off                                 t
-C   46    Es prob without solar and magnetic	Es prob with...      t
-C   47    CGM computation on 	 CGM computation off             false
+C   46    Es prob without solar and magnetic	Es prob with...         t
+C   47    CGM computation on 	 CGM computation off               false
 C   48    Ti  Tru-2021           Bil-1981                            t
 C   49    Plasmasphere: Ozhogin  Gallagher model                     t
-C   50    without plasmapause	 with plasmapause                    t
+C   50    without plasmapause	 with plasmapause                      t
 C   ------------------------------------------------------------------
 C
 C  Depending on the jf() settings additional INPUT parameters may 
@@ -483,7 +483,7 @@ C*****************************************************************
      &           INVDPC_OLD
       CHARACTER  FILNAM*12
       CHARACTER  FILPAT*256
-      CHARACTER(*) DIRECT
+      CHARACTER(*) DIRECT,LOGFILE
       INTEGER    NZKM
       REAL       ZKM(NZKM)
 c-web-for webversion
@@ -651,7 +651,7 @@ c-web- messages should be turned off with mess=jf(34)=.false.
         KONSOL=6
         if(.not.jf(12).and.mess) then
            konsol=11
-           open(11,file='messages.txt')
+           open(11,file=LOGFILE)
            endif
 c
 c selection of density, temperature and ion composition options ......

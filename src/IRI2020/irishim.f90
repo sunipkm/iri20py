@@ -5,11 +5,12 @@ subroutine iri20_init(direct)
     call readapf107(direct)
 end subroutine
 
-subroutine iri20_eval(jf,jmag,alat,alon,iyyy,mmdd,dhour,zkm,nzkm,outf,oarr,direct)
+subroutine iri20_eval(jf,jmag,alat,alon,iyyy,mmdd,dhour,zkm,nzkm,outf,oarr,direct,logfile)
     implicit none
     logical, intent(in) :: jf(50), jmag
     real, intent(in) :: alat, alon, dhour, zkm(nzkm), outf(20, nzkm), oarr(100)
     integer, intent(in) :: iyyy, mmdd, nzkm
     character, intent(in) :: direct(*)
-    call iri_sub(jf, jmag, alat, alon, iyyy, mmdd, dhour, zkm, nzkm, outf, oarr, direct)
+    character, intent(in), optional :: logfile(*)
+    call iri_sub(jf, jmag, alat, alon, iyyy, mmdd, dhour, zkm, nzkm, outf, oarr, direct,logfile)
 end subroutine
