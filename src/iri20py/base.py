@@ -1,34 +1,23 @@
 # %%
 from __future__ import annotations
-from datetime import datetime, UTC
+from .iri20shim import iri20_init, iri20_eval  # type: ignore
+from datetime import datetime, UTC, timedelta
 import os
 from pathlib import Path
 import sys
 from dataclasses import dataclass
-from typing import Any, Optional, Tuple, SupportsFloat as Numeric
+from time import perf_counter_ns
+from typing import Any, Dict, Optional, Tuple, SupportsFloat as Numeric
 
 import numpy as np
 from xarray import Dataset
 
-if hasattr(sys, 'ps1'):
-    from utils import Singleton, glowdate
-    from settings import Settings, ComputedSettings
-else:
-    from .utils import Singleton, glowdate
-    from .settings import Settings, ComputedSettings
+from .utils import Singleton, glowdate
+from .settings import Settings, ComputedSettings
 
 DIRNAME = Path(os.path.dirname(__file__))
-if hasattr(sys, 'ps1'):
-    LIBDIR = DIRNAME / '../../build'
-    LIBDIR = LIBDIR.resolve()
-    sys.path.append(str(LIBDIR))
-    from iri20shim import iri20_init, iri20_eval  # type: ignore
-    DATADIR = DIRNAME / '../IRI2020/data'
-    DATADIR = DATADIR.resolve()
-else:
-    from .iri20shim import iri20_init, iri20_eval  # type: ignore
-    DATADIR = DIRNAME / "data"
-    DATADIR = DATADIR.resolve()
+DATADIR = DIRNAME / "data"
+DATADIR = DATADIR.resolve()
 
 
 @dataclass
@@ -47,25 +36,74 @@ class Attribute:
 class Iri2020(Singleton):
     def _init(self):
         iri20_init(str(DATADIR))
+        self.settings: Settings = Settings()
+        self._benchmark = False
+        self._call = 0
+        self._setup = 0
+        self._fortran = 0
+        self._ds_build = 0
+        self._ds_attrib = 0
+        self._ds_settings = 0
+        self._total = 0
+
+    @property
+    def benchmark(self) -> bool:
+        return self._benchmark
+
+    @benchmark.setter
+    def benchmark(self, value: bool):
+        if value != self._benchmark:
+            self._call = 0
+            self._setup = 0
+            self._fortran = 0
+            self._ds_build = 0
+            self._ds_attrib = 0
+            self._ds_settings = 0
+            self._total = 0
+        self._benchmark = value
+
+    def get_benchmark(self) -> Optional[Dict[str, timedelta]]:
+        """Get benchmark data.
+
+        Returns:
+            Optional[Dict[str, timedelta]]: Metric and measured time.
+        """
+        if not self._benchmark or self._call == 0:
+            return None
+        return {
+            'setup': timedelta(milliseconds=self._setup / self._call),
+            'fortran': timedelta(milliseconds=self._fortran / self._call),
+            'ds_build': timedelta(milliseconds=self._ds_build / self._call),
+            'ds_attrib': timedelta(milliseconds=self._ds_attrib / self._call),
+            'ds_settings': timedelta(milliseconds=self._ds_settings / self._call),
+            'total': timedelta(milliseconds=self._total / self._call),
+        }
 
     def _iricall(self, lat: Numeric, lon: Numeric, alt: np.ndarray, year: int, day: int, ut: Numeric, settings: ComputedSettings) -> Dataset:
+        start = perf_counter_ns()
         outf = np.zeros((20, len(alt)), dtype=np.float32, order='F')
         alt = alt.astype(np.float32, order='F')
+        setup = perf_counter_ns()
         iri20_eval(settings.jf, 0, lat, lon, year, -day, (ut / 3600.0) + 25,
                    alt, outf, settings.oarr, str(DATADIR), settings.logfile)
+        fortran = perf_counter_ns()
         ds = Dataset()
         ds.coords['alt_km'] = (
             ('alt_km',), alt, {'units': 'km', 'long_name': 'Altitude'})
         densities = ['Ne', 'O+', 'H+', 'He+', 'O2+', 'NO+', 'Cluster', 'N+']
+        den_names = ['Electron', 'Oxygen Ion', 'Hydrogen Ion', 'Helium Ion', 'Oxygen Molecular Ion',
+                     'Nitric Oxide Ion', 'Cluster Ion', 'Nitrogen Ion']
         density_idx = [0, 4, 5, 6, 7, 8, 9, 10]
         temperatures = ['Te', 'Ti']
+        temperature_names = ['Electron Temperature', 'Ion Temperature']
         temperature_idx = [2, 3]
-        for idx, name in zip(density_idx, densities):
+        for idx, name, desc in zip(density_idx, densities, den_names):
             ds[name] = (('alt_km',), outf[idx]*1e-6,
-                        {'units': 'cm^-3', 'long_name': f'{name} Density'})
-        for idx, name in zip(temperature_idx, temperatures):
+                        {'units': 'cm^-3', 'long_name': f'{desc} Density'})
+        for idx, name, desc in zip(temperature_idx, temperatures, temperature_names):
             ds[name] = (('alt_km',), outf[idx], {
-                        'units': 'K', 'long_name': f'{name} Temperature'})
+                        'units': 'K', 'long_name': f'{desc} Temperature'})
+        ds_build = perf_counter_ns()
         ds.attrs['attributes'] = 'Stored as JSON strings'
         ds.attrs['description'] = 'IRI 2020 model output'
         oarr = settings.oarr.copy().astype(float)
@@ -253,22 +291,69 @@ class Iri2020(Singleton):
                 ds.attrs[key] = attr.to_json()
             elif attr is not None:
                 ds.attrs[key] = str(attr)
+        ds_attrib = perf_counter_ns()
+        ds.attrs['settings'] = self.settings.to_json()
+        ds_settings = perf_counter_ns()
+        if self._benchmark:
+            self._call += 1
+            self._setup += (setup - start)*1e-6
+            self._fortran += (fortran - setup)*1e-6
+            self._ds_build += (ds_build - fortran)*1e-6
+            self._ds_attrib += (ds_attrib - ds_build)*1e-6
+            self._ds_settings += (ds_settings - ds_attrib)*1e-6
+            self._total += (ds_settings - start)*1e-6
         return ds
 
-    def calculate(self, time: datetime, lat: Numeric, lon: Numeric, alt: np.ndarray, settings: Optional[Settings | ComputedSettings] = None) -> Tuple[ComputedSettings, Dataset]:
+    def evaluate(
+        self,
+        time: datetime,
+        lat: Numeric, lon: Numeric, alt: np.ndarray,
+        settings: Optional[Settings | ComputedSettings] = None
+    ) -> Tuple[ComputedSettings, Dataset]:
+        """Evaluate the IRI-2020 model.
+
+        Args:
+            time (datetime): Datetime object. 
+            lat (Numeric): Geographic latitude.
+            lon (Numeric): Geographic longitude.
+            alt (np.ndarray): Altitude in kilometers.
+            settings (Optional[Settings  |  ComputedSettings], optional): Settings to use. Defaults to None.
+
+        Returns:
+            Tuple[ComputedSettings, Dataset]: Computed settings and dataset. Passing in Settings will return ComputedSettings. For subsequent calls, pass in the returned ComputedSettings to avoid recomputation.
+        """
         if time.tzinfo is not None:
             time = time.astimezone(UTC)
         year, idate, utsec = glowdate(time)
         lon = lon % 360  # ensure lon is in 0-360 range
-        (settings, ds) = self.evaluate(
+        (settings, ds) = self.lowlevel(
             lat, lon, alt, year, idate, utsec, settings)
         ds.attrs['date'] = time.isoformat()
         return (settings, ds)
 
-    def evaluate(self, lat: Numeric, lon: Numeric, alt: np.ndarray, year: int, day: int, ut: Numeric, settings: Optional[Settings | ComputedSettings] = None) -> Tuple[ComputedSettings, Dataset]:
+    def lowlevel(self, lat: Numeric, lon: Numeric, alt: np.ndarray, year: int, day: int, ut: Numeric, settings: Optional[Settings | ComputedSettings] = None) -> Tuple[ComputedSettings, Dataset]:
+        """Low level call to evaluate IRI-2020 model.
+        Bypasses date and time calculations.
+
+        Args:
+            lat (Numeric): Geographic latitude
+            lon (Numeric): Geographic longitude
+            alt (np.ndarray): Altitude in kilometers
+            year (int): Year (four digits)
+            day (int): Day of the year (1-365/366)
+            ut (Numeric): Universal time in seconds
+            settings (Optional[Settings  |  ComputedSettings], optional): Settings to use. Defaults to None.
+
+        Raises:
+            TypeError: If settings is not of type Settings or ComputedSettings.
+
+        Returns:
+            Tuple[ComputedSettings, Dataset]: Computed settings and dataset. Passing in Settings will return ComputedSettings. For subsequent calls, pass in the returned ComputedSettings to avoid recomputation.
+        """
         if settings is None:
-            settings = Settings()
+            settings = self.settings
         if isinstance(settings, Settings):
+            self.settings = settings
             settings = ComputedSettings.from_settings(settings)
         if not isinstance(settings, ComputedSettings):
             raise TypeError(
@@ -278,18 +363,47 @@ class Iri2020(Singleton):
 
 
 # %%
-if hasattr(sys, 'ps1'):
+def test():
     import matplotlib.pyplot as plt
-    from utils import alt_grid
+    from pprint import pprint
+    from iri20py import Iri2020, Settings, alt_grid
+    settings = Settings(logfile=Path('iri_log.txt'))
     iri = Iri2020()
     date = datetime(2022, 3, 21, 12, 0, 0, tzinfo=UTC)
-    _, ds = iri.calculate(
+    set, ds1 = iri.evaluate(
         date,
         40.0, 105.0,
-        alt_grid()
+        alt_grid(),
+        settings
     )
-    print(ds)
-    ds.Ne.plot(y='alt_km')
+    # iri.benchmark = True
+    # for idx in range(int(1e4)):
+    #     if idx > 0 and idx % 1000 == 0:
+    #         print(f"{idx}/{int(1e4)} calculations done")
+    #     _ = iri.calculate(
+    #         date,
+    #         40.0, 105.0,
+    #         alt_grid(),
+    #         set
+    #     )
+    # pprint(iri.get_benchmark())
+    pprint(ds1)
+    _, ds2 = iri.evaluate(
+        datetime(2022, 3, 21, 0, 0, 0, tzinfo=UTC),
+        40.0, 105.0,
+        alt_grid(),
+        set
+    )
+    fig, ax = plt.subplots(1, 2, sharey=True)
+    ds1.Ne.plot(ax=ax[0], y='alt_km')
+    ds2.Ne.plot(ax=ax[1], y='alt_km')
+    ax[0].set_xscale('log')
+    ax[1].set_xscale('log')
+    ax[0].set_ylabel('Altitude (km)')
+    ax[0].set_title('Ne at 12:00 UTC')
+    ax[1].set_title('Ne at 00:00 UTC')
     plt.show()
+    # ds1.to_netcdf('iri_output.nc')
+
 
 # %%

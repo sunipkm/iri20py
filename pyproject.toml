@@ -11,7 +11,7 @@ build-backend = "mesonpy"
 
 [project]
 name = "iri20py"
-version = "0.0.0"
+version = "0.0.1"
 requires-python = ">=3.7"
 authors = [
     {name = "Sunip K. Mukherjee", email = "sunipkmukherjee@gmail.com"},
@@ -31,10 +31,11 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 license = {file = "LICENSE"}
-# readme = "README.md"
-dependencies = ['meson', 'ninja', 'numpy >= 1.14.5']
+readme = "README.md"
+dependencies = ['meson', 'ninja', 'numpy >= 1.14.5', 'xarray']
 
 [project.urls]
 homepage = "https://github.com/sunipkm/iri20py"
 
 [project.scripts]
+Iri2020Test = "iri20py.base:test"

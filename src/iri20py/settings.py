@@ -325,7 +325,9 @@ class Settings:
         """
         import json
         from dataclasses import asdict
-        return json.dumps(asdict(self))
+        settings = asdict(self)
+        settings['logfile'] = str(self.logfile) if self.logfile is not None else None
+        return json.dumps(settings)
 
 
 @dataclass

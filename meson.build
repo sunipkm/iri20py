@@ -33,6 +33,7 @@ py.install_sources(
     'src/iri20py/__init__.py',
     'src/iri20py/base.py',
     'src/iri20py/download.py',
+    'src/iri20py/settings.py',
     'src/iri20py/utils.py',
     subdir: 'iri20py',
     pure: false,

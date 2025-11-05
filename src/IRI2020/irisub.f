@@ -653,7 +653,7 @@ c-web- messages should be turned off with mess=jf(34)=.false.
         KONSOL=6
         if(.not.jf(12).and.mess) then
            konsol=11
-c           write(6,*) 'Opening log file: ', LOGFILE
+         !   write(6,*) 'Opening log file: ', LOGFILE
            open(11,file=LOGFILE)
            endif
 c
