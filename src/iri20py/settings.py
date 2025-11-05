@@ -152,15 +152,15 @@ def plasmaspheremodel_flags(inp: PlasmasphereModel) -> List[Tuple[int, bool]]:
 class Settings:
     """Settings for IRI-2020 model evaluation.
     """
-    compute_ne: bool = True  # 0
-    """Compute electron density [default: True]
-    """
-    compute_temp: bool = True  # 1
-    """Compute electron and ion temperatures [default: True]
-    """
-    compute_ions: bool = True  # 2
-    """Compute ion densities [default: True]
-    """
+    # compute_ne: bool = True  # 0
+    # """Compute electron density [default: True]
+    # """
+    # compute_temp: bool = True  # 1
+    # """Compute electron and ion temperatures [default: True]
+    # """
+    # compute_ions: bool = True  # 2
+    # """Compute ion densities [default: True]
+    # """
     b0_b1_model: B0B1Model = 'ABT-2009'  # [3,30]
     """B0-B1 model. Available options are:
     - 'Bil-2000'
@@ -317,6 +317,16 @@ class Settings:
     """Compute plasmapause [default: True]
     """
 
+    def to_json(self) -> str:
+        """Convert settings to JSON string.
+
+        Returns:
+            str: JSON string representation of settings.
+        """
+        import json
+        from dataclasses import asdict
+        return json.dumps(asdict(self))
+
 
 @dataclass
 class ComputedSettings:
@@ -331,11 +341,9 @@ class ComputedSettings:
     def from_settings(settings: Settings) -> ComputedSettings:
         jf = np.full(50, True, dtype=bool)
         oarr = np.full(100, -1, dtype=float)
-
+        jf[11] = False
+        jf[33] = True
         # Set flags based on settings
-        jf[0] = settings.compute_ne
-        jf[1] = settings.compute_temp
-        jf[2] = settings.compute_ions
         jf[6] = settings.ne_f107_limit
         if settings.foF2 is not None:
             jf[7] = False
@@ -347,14 +355,10 @@ class ComputedSettings:
             jf[9] = False
             oarr[14] = settings.te_mode[0]
             oarr[15] = settings.te_mode[1]
-        if settings.logfile is not None:
-            jf[11] = False
-            jf[33] = True
+        if settings.logfile is not None and settings.logfile != '':
             logfile_str = str(settings.logfile)
         else:
-            jf[11] = True
-            jf[33] = False
-            logfile_str = ''
+            logfile_str = '/dev/null'
         if settings.foF1 is not None:
             jf[12] = False
             oarr[2] = settings.foF1
@@ -435,7 +439,5 @@ class ComputedSettings:
                 jf[index] = flag
 
         # Additional flags and oarr values would be set here...
-
-        logfile_str = str(settings.logfile) if settings.logfile else ''
 
         return ComputedSettings(jf=jf, oarr=oarr.astype(np.float32), logfile=logfile_str)

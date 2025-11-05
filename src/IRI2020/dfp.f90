@@ -7,7 +7,10 @@
          integer :: dir_len
 
          ! --- Trim leading/trailing blanks from directory ---
+         ! write(6,*) 'Input dir: ', direct 
          trimmed_dir = trim(adjustl(direct))
+         ! write(6,*) 'Adjusted input: ', trimmed_dir
+         ! write(6,*) 'Input file: ', filename
          dir_len = len_trim(trimmed_dir)
          select case (dir_len)
           case (0)
@@ -28,4 +31,5 @@
          else if (len_trim(path) > 256) then
             path = path(1:256)
          end if
+         ! write(6,*) 'Output path: ', path
       end subroutine dfp

@@ -1,5 +1,6 @@
 # %%
 from __future__ import annotations
+from numbers import Number
 from typing import Iterable, SupportsAbs, Tuple, SupportsFloat as Numeric, Callable
 from numpy import arctan, cumsum, float32, interp, isnan, linspace, ndarray, tan, pi as M_PI, asarray, all, tanh
 from datetime import datetime
@@ -10,36 +11,6 @@ iri20py.utils
 
 This module provides utility functions for the iri20py package.
 """
-
-#: WGS84 ellipsoid major and minor axes.
-WGS84_ELL = (6378137, 6356752.3142)  # WGS84 ellipsoid
-#: WGS74 ellipsoid major and minor axes.
-WGS74_ELL = (6378135, 6356750.5)  # WGS74 ellipsoid
-
-
-def geocent_to_geodet(lat: Numeric | Iterable[Numeric], ell: Tuple[Numeric, Numeric] = WGS84_ELL) -> Numeric | ndarray:
-    """## Convert geocentric latitude to geodetic latitude.
-
-    ### Args:
-        - `lat (Numeric | Iterable[Numeric])`: Geocentric latitude in degrees.
-        - `ell (Tuple[Numeric, Numeric], optional)`: Reference ellipsoid major and minor axes. Defaults to WGS84 ellipsoid.
-
-    ### Asserts:
-        - `-90 <= lat <= 90`: Latitude is within bounds.
-        - `ell[0] > 0`: Major axis length is positive.
-        - `ell[1] > 0`: Minor axis length is positive.
-        - `ell[0] > ell[1]`: Major and minor axes convention.
-        - `lat.ndim == 1`: Latitude is 1-D array.
-
-    ### Returns:
-        - `Numeric`: Geodetic latitude in degrees.
-    """
-    a, b = ell
-    if isinstance(lat, Iterable):
-        lat = asarray(lat)
-        assert (lat.ndim == 1)
-    assert (a > 0 and b > 0 and a > b and all((-90 <= lat) & (lat <= 90)))
-    return arctan(b*tan(lat*M_PI/180)/a)*180/M_PI
 
 
 def glowdate(t: datetime) -> Tuple[int, int, Numeric]:

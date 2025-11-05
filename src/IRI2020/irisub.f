@@ -481,9 +481,11 @@ C*****************************************************************
      &           NMF1,NME,NMD,MM,MLAT,MLONG,NMF2S,NMES,INVDPC,
      &           INVDIP_OLD,INVDIP_OLD_110,INVDIP_OLD_600,
      &           INVDPC_OLD
+      INTEGER    NDIRECT, NLOGFILE
       CHARACTER  FILNAM*12
       CHARACTER  FILPAT*256
-      CHARACTER(*) DIRECT,LOGFILE
+      CHARACTER(*)  DIRECT
+      CHARACTER(*) LOGFILE 
       INTEGER    NZKM
       REAL       ZKM(NZKM)
 c-web-for webversion
@@ -651,6 +653,7 @@ c-web- messages should be turned off with mess=jf(34)=.false.
         KONSOL=6
         if(.not.jf(12).and.mess) then
            konsol=11
+c           write(6,*) 'Opening log file: ', LOGFILE
            open(11,file=LOGFILE)
            endif
 c
@@ -1025,7 +1028,9 @@ C
         ENDIF
         CALL GEODIP(IYEAR,LATI,LONGI,MLAT,MLONG,JMAG)
 
-        if((iyear.ne.iyearo).or.(daynr.ne.idaynro)) CALL FELDCOF(RYEAR)
+        if((iyear.ne.iyearo).or.(daynr.ne.idaynro)) then
+         CALL FELDCOF(RYEAR,DIRECT)
+        endif
 
         if(jf(18)) then
         	call igrf_dip(lati,longi,ryear,300.0,dec,dip,magbr,modip)
@@ -2332,7 +2337,7 @@ C
 
         height=zkm(1)
         kk=1
-	xinv=0.0
+   	  xinv=0.0
 
 300   CALL SOCO(daynr,HOUR,LATI,LONGI,height,SUNDEC,XHI,SAX,SUX)
 
