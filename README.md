@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/1089134543.svg)](https://zenodo.org/badge/latestdoi/1089134543)
 # IRI-2020 Python Wrapper
 `iri20py` is a wrapper around the [IRI-2020](https://ccmc.gsfc.nasa.gov/models/IRI~2020/) empirical model.
 
@@ -52,3 +53,18 @@ plt.show()
     a longer name (`long_name`) and an associated `description`, if available.
 
 The dataset is NetCDF4 compatible.
+
+# Citation
+If you use this code in your work, please cite the repository:
+```bibtex
+@software{sunipkm_iri20py_2025,
+  author       = {Sunip K. Mukherjee},
+  title        = {{iri20py}: A Python Wrapper for the IRI-2020 Empirical Model},
+  month        = jun,
+  year         = 2025,
+  publisher    = {GitHub},
+  version      = {v0.0.1},
+  doi          = {https://zenodo.org/badge/latestdoi/1089134543},
+  url          = {https://github.com/sunipkm/iri20py},
+}
+```

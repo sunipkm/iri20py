@@ -377,7 +377,7 @@ class ComputedSettings:
             jf[16] = False
             oarr[32] = settings.rz12
         jf[20] = settings.ion_drift
-        jf[21] = True  # Ion densities in m3 always
+        jf[21] = False  # Ion densities in m3 always
 
         if settings.f107 is not None:
             jf[24] = False

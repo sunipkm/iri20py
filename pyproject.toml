@@ -11,7 +11,7 @@ build-backend = "mesonpy"
 
 [project]
 name = "iri20py"
-version = "0.0.1"
+version = "0.0.2"
 requires-python = ">=3.7"
 authors = [
     {name = "Sunip K. Mukherjee", email = "sunipkmukherjee@gmail.com"},
