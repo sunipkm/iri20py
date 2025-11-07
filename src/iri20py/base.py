@@ -12,7 +12,7 @@ from typing import Any, Dict, Optional, Tuple, SupportsFloat as Numeric
 import numpy as np
 from xarray import Dataset
 
-from .utils import Singleton, glowdate
+from .utils import Singleton, iridate
 from .settings import Settings, ComputedSettings
 
 DIRNAME = Path(os.path.dirname(__file__))
@@ -308,7 +308,9 @@ class Iri2020(Singleton):
         self,
         time: datetime,
         lat: Numeric, lon: Numeric, alt: np.ndarray,
-        settings: Optional[Settings | ComputedSettings] = None
+        settings: Optional[Settings | ComputedSettings] = None,
+        *,
+        tzaware: bool = False
     ) -> Tuple[ComputedSettings, Dataset]:
         """Evaluate the IRI-2020 model.
 
@@ -318,13 +320,13 @@ class Iri2020(Singleton):
             lon (Numeric): Geographic longitude.
             alt (np.ndarray): Altitude in kilometers.
             settings (Optional[Settings  |  ComputedSettings], optional): Settings to use. Defaults to None.
-
+            tzaware (bool, optional): If time is time zone aware. If true, `time` is recast to 'UTC' using `time.astimezone(pytz.utc)`. Defaults to False.
         Returns:
             Tuple[ComputedSettings, Dataset]: Computed settings and dataset. Passing in Settings will return ComputedSettings. For subsequent calls, pass in the returned ComputedSettings to avoid recomputation.
         """
-        if time.tzinfo is not None:
+        if tzaware:
             time = time.astimezone(UTC)
-        year, idate, utsec = glowdate(time)
+        year, idate, utsec = iridate(time)
         lon = lon % 360  # ensure lon is in 0-360 range
         (settings, ds) = self.lowlevel(
             lat, lon, alt, year, idate, utsec, settings)

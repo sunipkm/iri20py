@@ -13,7 +13,7 @@ This module provides utility functions for the iri20py package.
 """
 
 
-def glowdate(t: datetime) -> Tuple[int, int, Numeric]:
+def iridate(t: datetime) -> Tuple[int, int, Numeric]:
     """## Convert datetime to GLOW date and UT seconds.
 
     ### Args:
