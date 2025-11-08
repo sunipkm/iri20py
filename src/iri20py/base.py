@@ -34,9 +34,15 @@ class Attribute:
 
 
 class Iri2020(Singleton):
-    def _init(self):
+    """IRI-2020 Model.
+
+    Args:
+        settings (Optional[Settings], optional): Configuration settings. Defaults to None.
+    """
+
+    def _init(self, settings: Optional[Settings] = None):
         iri20_init(str(DATADIR))
-        self.settings: Settings = Settings()
+        self.settings: Settings = settings or Settings()
         self._benchmark = False
         self._call = 0
         self._setup = 0
@@ -96,7 +102,7 @@ class Iri2020(Singleton):
         density_idx = [0, 4, 5, 6, 7, 8, 9, 10]
         temperatures = ['Te', 'Ti']
         temperature_names = ['Electron Temperature', 'Ion Temperature']
-        temperature_idx = [2, 3]
+        temperature_idx = [3, 2]
         for idx, name, desc in zip(density_idx, densities, den_names):
             ds[name] = (('alt_km',), outf[idx]*1e-6,
                         {'units': 'cm^-3', 'long_name': f'{desc} Density'})

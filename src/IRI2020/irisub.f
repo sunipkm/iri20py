@@ -2689,6 +2689,6 @@ c include only every second auroral boundary point (MLT=0,1,2..23)
 3330  CONTINUE
 
        icalls=icalls+1
-
+       close(konsol)
        RETURN
        END
