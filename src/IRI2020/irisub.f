@@ -2220,7 +2220,7 @@ c XTETI is altitude where Te=Ti
         XTTS=500.
         X=500.
 2397    X=X+XTTS
-        IF(X.GE.AHH(7)) GOTO 240
+        IF(X.GE.30000.0) GOTO 240
         TEX=BOOKER1(X,5,ATE1,AHH,STTE,DTE)	
         TIX=BOOKER1(X,MXSM,TNHS,XSM,MM,DTI)
         IF(TIX.LT.TEX) GOTO 2397
@@ -2290,7 +2290,7 @@ c XTETI is altitude where Te=Ti
         XTTS=500.
         X=500.
 2390    X=X+XTTS
-        IF(X.GE.AHH(7)) GOTO 240
+        IF(X.GE.30000.0) GOTO 240
         TEX=BOOKER1(X,5,ATE1,AHH,STTE,DTE)	
         TIX=BOOKER1(X,MXSM,TNHS,XSM,MM,DTI)
         IF(TIX.LT.TEX) GOTO 2390

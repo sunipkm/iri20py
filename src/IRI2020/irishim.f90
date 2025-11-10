@@ -16,9 +16,6 @@ subroutine iri20_eval(jf,jmag,alat,alon,iyyy,mmdd,dhour,zkm,nzkm,outf,oarr,direc
    integer :: j
    call iri_sub(jf, jmag, alat, alon, iyyy, mmdd, dhour, zkm, nzkm, outf, oarr, direct, &
       logfile)
-   do j=1,nzkm
-      if (outf(4,j).lt.outf(3,j)) outf(4,j) = outf(3,j)
-   enddo
    if (jf(22)) then
       do j=5,13
          outf(j,:) = outf(j,:)*outf(1,:) / 100.0 ! % to absolute units

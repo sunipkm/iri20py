@@ -88,26 +88,33 @@ class Iri2020(Singleton):
     def _iricall(self, lat: Numeric, lon: Numeric, alt: np.ndarray, year: int, day: int, ut: Numeric, settings: ComputedSettings) -> Dataset:
         start = perf_counter_ns()
         outf = np.zeros((20, len(alt)), dtype=np.float32, order='F')
-        alt = alt.astype(np.float32, order='F')
-        setup = perf_counter_ns()
-        iri20_eval(settings.jf, 0, lat, lon, year, -day, (ut / 3600.0) + 25,
-                   alt, outf, settings.oarr, str(DATADIR), settings.logfile)
-        fortran = perf_counter_ns()
         ds = Dataset()
         ds.coords['alt_km'] = (
-            ('alt_km',), alt, {'units': 'km', 'long_name': 'Altitude'})
+            ('alt_km',), alt.copy(), {'units': 'km', 'long_name': 'Altitude'})
+        alt = alt.astype(np.float32, order='F')
+        setup = perf_counter_ns()
+        iri20_eval(
+            settings.jf, 0, lat, lon, year, -day, (float(ut) / 3600.0) + 25,
+            alt, outf, settings.oarr, str(DATADIR), settings.logfile
+        )
+        fortran = perf_counter_ns()
         densities = ['Ne', 'O+', 'H+', 'He+', 'O2+', 'NO+', 'Cluster', 'N+']
-        den_names = ['Electron', 'Oxygen Ion', 'Hydrogen Ion', 'Helium Ion', 'Oxygen Molecular Ion',
-                     'Nitric Oxide Ion', 'Cluster Ion', 'Nitrogen Ion']
+        den_names = [
+            'Electron', 'Oxygen Ion', 'Hydrogen Ion', 'Helium Ion', 'Oxygen Molecular Ion',
+            'Nitric Oxide Ion', 'Cluster Ion', 'Nitrogen Ion'
+        ]
         density_idx = [0, 4, 5, 6, 7, 8, 9, 10]
-        temperatures = ['Te', 'Ti']
-        temperature_names = ['Electron Temperature', 'Ion Temperature']
-        temperature_idx = [3, 2]
+        temperatures = ['Tn', 'Te', 'Ti']
+        temperature_names = [
+            'Neutral Temperature',
+            'Electron Temperature', 'Ion Temperature'
+        ]
+        temperature_idx = [1, 3, 2]
         for idx, name, desc in zip(density_idx, densities, den_names):
-            ds[name] = (('alt_km',), outf[idx]*1e-6,
+            ds[name] = (('alt_km',), np.array(outf[idx]*1e-6, dtype=float),
                         {'units': 'cm^-3', 'long_name': f'{desc} Density'})
         for idx, name, desc in zip(temperature_idx, temperatures, temperature_names):
-            ds[name] = (('alt_km',), outf[idx], {
+            ds[name] = (('alt_km',), np.array(outf[idx], dtype=float), {
                         'units': 'K', 'long_name': f'{desc} Temperature'})
         ds_build = perf_counter_ns()
         ds.attrs['attributes'] = 'Stored as JSON strings'
@@ -122,8 +129,10 @@ class Iri2020(Singleton):
             oarr[2]*1e-6, 'cm^-3', 'F1 Peak Density', 'F1 layer peak electron density')
         attrs['hmF1'] = Attribute(
             oarr[3], 'km', 'F1 Peak Height', 'F1 layer peak height')
-        attrs['nmE'] = Attribute(oarr[4]*1e-6, 'cm^-3',
-                                 'E Layer Peak Density', 'E layer peak electron density')
+        attrs['nmE'] = Attribute(
+            oarr[4]*1e-6, 'cm^-3',
+            'E Layer Peak Density', 'E layer peak electron density'
+        )
         attrs['hmE'] = Attribute(
             oarr[5], 'km', 'E Layer Peak Height', 'E layer peak height')
         attrs['nmD'] = Attribute(
@@ -139,34 +148,55 @@ class Iri2020(Singleton):
         attrs['valley_top'] = Attribute(
             oarr[11], 'km', 'Height of E-valley top')
         attrs['Te-Peak'] = Attribute(oarr[12], 'K', 'Te Peak')
-        attrs['hTe-Peak'] = Attribute(oarr[13],
-                                      'km', 'hTe Peak', 'Peak Te altitude')
-        attrs['Te-MOD(300km)'] = Attribute(oarr[14], 'K',
-                                           'Te MOD(300km)', 'Electron temperature at 300 km altitude')
-        attrs['Te-MOD(400km)'] = Attribute(oarr[15], 'K',
-                                           'Te MOD(400km)', 'Electron temperature at 400 km altitude')
-        attrs['Te-MOD(600km)'] = Attribute(oarr[16], 'K',
-                                           'Te MOD(600km)', 'Electron temperature at 600 km altitude')
-        attrs['Te-MOD(1400km)'] = Attribute(oarr[17], 'K',
-                                            'Te MOD(1400km)', 'Electron temperature at 1400 km altitude')
-        attrs['Te-MOD(3000km)'] = Attribute(oarr[18], 'K',
-                                            'Te MOD(3000km)', 'Electron temperature at 3000 km altitude')
-        attrs['Te-MOD(120km)'] = Attribute(oarr[19], 'K', 'Te MOD(120km)',
-                                           'Electron temperature at 120 km altitude, Te = Ti = Tn')
-        attrs['Ti-MOD(430km)'] = Attribute(oarr[20], 'K',
-                                           'Ti MOD(430km)', 'Ion temperature at 430 km altitude')
-        attrs['Ti-Te-Eq'] = Attribute(oarr[21], 'km', 'Ti-Te-Eq',
-                                      'Height at which ion and electron temperatures are at equilibrium')
-        attrs['sza'] = Attribute(oarr[22], 'degrees', 'Solar Zenith Angle',
-                                 'Solar zenith angle at the specified location and time')
+        attrs['hTe-Peak'] = Attribute(
+            oarr[13],
+            'km', 'hTe Peak', 'Peak Te altitude'
+        )
+        attrs['Te-MOD(300km)'] = Attribute(
+            oarr[14], 'K',
+            'Te MOD(300km)', 'Electron temperature at 300 km altitude'
+        )
+        attrs['Te-MOD(400km)'] = Attribute(
+            oarr[15], 'K',
+            'Te MOD(400km)', 'Electron temperature at 400 km altitude'
+        )
+        attrs['Te-MOD(600km)'] = Attribute(
+            oarr[16], 'K',
+            'Te MOD(600km)', 'Electron temperature at 600 km altitude'
+        )
+        attrs['Te-MOD(1400km)'] = Attribute(
+            oarr[17], 'K',
+            'Te MOD(1400km)', 'Electron temperature at 1400 km altitude'
+        )
+        attrs['Te-MOD(3000km)'] = Attribute(
+            oarr[18], 'K',
+            'Te MOD(3000km)', 'Electron temperature at 3000 km altitude'
+        )
+        attrs['Te-MOD(120km)'] = Attribute(
+            oarr[19], 'K', 'Te MOD(120km)',
+            'Electron temperature at 120 km altitude, Te = Ti = Tn')
+        attrs['Ti-MOD(430km)'] = Attribute(
+            oarr[20], 'K',
+            'Ti MOD(430km)', 'Ion temperature at 430 km altitude'
+        )
+        attrs['Ti-Te-Eq'] = Attribute(
+            oarr[21], 'km', 'Ti-Te-Eq',
+            'Height at which ion and electron temperatures are at equilibrium'
+        )
+        attrs['sza'] = Attribute(
+            oarr[22], 'degrees', 'Solar Zenith Angle',
+            'Solar zenith angle at the specified location and time'
+        )
         attrs['sun_dec'] = Attribute(
             oarr[23], 'degrees', 'Solar Declination', 'Solar declination angle at the specified time')
-        attrs['dip'] = Attribute(oarr[24], 'degrees', 'Magnetic Dip Angle',
-                                 'Magnetic dip angle at the specified location')
-        attrs['dip-lat'] = Attribute(oarr[25], 'degrees',
-                                     'Magnetic Dip Latitude', 'Magnetic dip latitude')
-        attrs['dip-lat-mod'] = Attribute(oarr[26], 'degrees',
-                                         'Magnetic Dip Latitude (Modified)', 'Modified magnetic dip latitude')
+        attrs['dip'] = Attribute(
+            oarr[24], 'degrees', 'Magnetic Dip Angle',
+            'Magnetic dip angle at the specified location'
+        )
+        attrs['dip-lat'] = Attribute(
+            oarr[25], 'degrees', 'Magnetic Dip Latitude', 'Magnetic dip latitude')
+        attrs['dip-lat-mod'] = Attribute(
+            oarr[26], 'degrees', 'Magnetic Dip Latitude (Modified)', 'Modified magnetic dip latitude')
         attrs['lat'] = Attribute(
             oarr[27], 'degrees', 'Latitude', 'Geographic Latitude')
         attrs['sunrise'] = Attribute(
@@ -177,17 +207,25 @@ class Iri2020(Singleton):
                                     'Season indicator: 1=Spring, 2=Summer, 3=Fall, 4=Winter')
         attrs['lon'] = Attribute(
             oarr[31], 'degrees', 'Longitude', 'Geographic Longitude')
-        attrs['RZ12'] = Attribute(oarr[32], None, 'RZ12 Solar Index',
-                                  '12-month running average of the solar radio flux at 10.7 cm')
+        attrs['RZ12'] = Attribute(
+            oarr[32], None, 'RZ12 Solar Index',
+            '12-month running average of the solar radio flux at 10.7 cm'
+        )
         attrs['cov'] = Attribute(oarr[33], None, 'Covington Index')
-        attrs['B1'] = Attribute(oarr[34], None,
-                                'B1', 'Bottomside shape parameter')
-        attrs['M(3000)F2'] = Attribute(oarr[35], 'MHz', 'M(3000)F2',
-                                       'Maximum usable frequency for a 3000 km path in the F2 layer')
+        attrs['B1'] = Attribute(
+            oarr[34], None,
+            'B1', 'Bottomside shape parameter'
+        )
+        attrs['M(3000)F2'] = Attribute(
+            oarr[35], 'MHz', 'M(3000)F2',
+            'Maximum usable frequency for a 3000 km path in the F2 layer'
+        )
         # attrs['TEC'] = Attribute(oarr[36]*1e16, 'm^-2', 'Total Electron Content', 'Total electron content along a vertical column through the ionosphere')
         # attrs['TEC_top'] = Attribute(oarr[37]*1e16, 'm^-2', 'Total Electron Content top of ionosphere')
-        attrs['IG12'] = Attribute(oarr[38], None, 'IG12 Solar Index',
-                                  '12-month running average of the IG12 solar index')
+        attrs['IG12'] = Attribute(
+            oarr[38], None, 'IG12 Solar Index',
+            '12-month running average of the IG12 solar index'
+        )
         attrs['F1_prob'] = Attribute(
             oarr[39], None, 'F1 Layer Probability', 'Probability of occurrence of the F1 layer')
         attrs['F10.7'] = Attribute(
@@ -197,13 +235,20 @@ class Iri2020(Singleton):
         attrs['daynr'] = Attribute(
             oarr[42], None, 'Day Numeric', 'Day number within the year (1-365/366)')
         attrs['vert_ion_drift'] = Attribute(
-            oarr[43], 'm/s', 'Equatorial Vertical Ion Drift', 'Vertical ion drift velocity')
-        attrs['foF2_rat'] = Attribute(oarr[44], None, 'Storm foF2 / Quiet foF2',
-                                      'Ratio of the F2 layer critical frequency during storm conditions to quiet conditions')
-        attrs['F10.7_81'] = Attribute(oarr[45], 'sfu', '81-day Averaged F10.7 Solar Flux',
-                                      '81-day averaged solar radio flux at 10.7 cm wavelength')
-        attrs['foE_rat'] = Attribute(oarr[46], None, 'Storm foE / Quiet foE',
-                                     'Ratio of the E layer critical frequency during storm conditions to quiet conditions')
+            oarr[43], 'm/s', 'Equatorial Vertical Ion Drift', 'Vertical ion drift velocity'
+        )
+        attrs['foF2_rat'] = Attribute(
+            oarr[44], None, 'Storm foF2 / Quiet foF2',
+            'Ratio of the F2 layer critical frequency during storm conditions to quiet conditions'
+        )
+        attrs['F10.7_81'] = Attribute(
+            oarr[45], 'sfu', '81-day Averaged F10.7 Solar Flux',
+            '81-day averaged solar radio flux at 10.7 cm wavelength'
+        )
+        attrs['foE_rat'] = Attribute(
+            oarr[46], None, 'Storm foE / Quiet foE',
+            'Ratio of the E layer critical frequency during storm conditions to quiet conditions'
+        )
         attrs['spread_f_prob'] = Attribute(
             oarr[47], None, 'Spread F Probability', 'Probability of occurrence of spread F conditions')
         attrs['geomag_lat'] = Attribute(
@@ -277,10 +322,14 @@ class Iri2020(Singleton):
             oarr[82], None, 'Kp Geomagnetic Index', 'Planetary geomagnetic index Kp')
         attrs['declination'] = Attribute(
             oarr[83], 'degrees', 'Magnetic Declination', 'Magnetic declination angle at the specified location')
-        attrs['L-value'] = Attribute(oarr[84],
-                                     None, 'L-value', 'McIlwain L-parameter')
-        attrs['dipole-moment'] = Attribute(oarr[85], 'Unknown',
-                                           'Dipole Moment', 'Earth\'s magnetic dipole moment')
+        attrs['L-value'] = Attribute(
+            oarr[84],
+            None, 'L-value', 'McIlwain L-parameter'
+        )
+        attrs['dipole-moment'] = Attribute(
+            oarr[85], 'Unknown',
+            'Dipole Moment', 'Earth\'s magnetic dipole moment'
+        )
         attrs['SAX300'] = Attribute(
             oarr[86], 'hours', 'SAX300', 'Sunrise at 300km altitude')
         attrs['SUX300'] = Attribute(
@@ -333,7 +382,7 @@ class Iri2020(Singleton):
         if tzaware:
             time = time.astimezone(UTC)
         year, idate, utsec = iridate(time)
-        lon = lon % 360  # ensure lon is in 0-360 range
+        lon = float(lon) % 360  # ensure lon is in 0-360 range
         (settings, ds) = self.lowlevel(
             lat, lon, alt, year, idate, utsec, settings)
         ds.attrs['date'] = time.isoformat()

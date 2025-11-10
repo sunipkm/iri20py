@@ -48,9 +48,9 @@ def fof2model_flags(inp: FoF2Model) -> List[Tuple[int, bool]]:
 
 def ni_model_flags(inp: NiModel) -> List[Tuple[int, bool]]:
     if inp == 'DS-95 & DY-85':
-        return [(5, False)]
-    elif inp == 'RBV-2010 & TBT-2015':
         return [(5, True)]
+    elif inp == 'RBV-2010 & TBT-2015':
+        return [(5, False)]
     else:
         raise ValueError(f"Unknown NiModel: {inp}")
 
@@ -232,7 +232,7 @@ class Settings:
     ion_drift: bool = True  # [20]
     """Compute ion drift [default: True]
     """
-    # ion densities in m3: [21] -> True
+    # ion densities in m3: [21] -> False
     te_topside: TeTopModel = 'TBT-2012'  # [22] -> F
     """Electron temperature topside model. Available options are:
     - 'Bil-1985'
