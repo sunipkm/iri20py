@@ -29,7 +29,7 @@ IonTempModel = Literal['Tru-2021', 'Bil-1981']  # [47] T, F
 PlasmasphereModel = Literal['Ozhogin', 'Gallagher']  # [48] T, F
 
 
-def b0b1model_flags(inp: B0B1Model) -> List[Tuple[int, bool]]:
+def _b0b1model_flags(inp: B0B1Model) -> List[Tuple[int, bool]]:
     if inp == 'Bil-2000':
         return [(3, True), (30, True)]
     elif inp == 'ABT-2009':
@@ -40,7 +40,7 @@ def b0b1model_flags(inp: B0B1Model) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown B0B1Model: {inp}")
 
 
-def fof2model_flags(inp: FoF2Model) -> List[Tuple[int, bool]]:
+def _fof2model_flags(inp: FoF2Model) -> List[Tuple[int, bool]]:
     if inp == 'CCIR':
         return [(4, True)]
     elif inp == 'URSI':
@@ -49,7 +49,7 @@ def fof2model_flags(inp: FoF2Model) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown FoF2Model: {inp}")
 
 
-def ni_model_flags(inp: NiModel) -> List[Tuple[int, bool]]:
+def _ni_model_flags(inp: NiModel) -> List[Tuple[int, bool]]:
     if inp == 'DS-95 & DY-85':
         return [(5, True)]
     elif inp == 'RBV-2010 & TBT-2015':
@@ -58,7 +58,7 @@ def ni_model_flags(inp: NiModel) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown NiModel: {inp}")
 
 
-def nemode_flags(inp: NeMode) -> List[Tuple[int, bool]]:
+def _nemode_flags(inp: NeMode) -> List[Tuple[int, bool]]:
     if inp == 'Standard':
         return [(10, True)]
     elif inp == 'Lay-function':
@@ -67,7 +67,7 @@ def nemode_flags(inp: NeMode) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown NeMode: {inp}")
 
 
-def magfield_flags(inp: MagField) -> List[Tuple[int, bool]]:
+def _magfield_flags(inp: MagField) -> List[Tuple[int, bool]]:
     if inp == 'IGRF':
         return [(17, True)]
     elif inp == 'POGO68':
@@ -76,7 +76,7 @@ def magfield_flags(inp: MagField) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown MagField: {inp}")
 
 
-def f1model_flags(inp: F1Model) -> List[Tuple[int, bool]]:
+def _f1model_flags(inp: F1Model) -> List[Tuple[int, bool]]:
     if inp == 'Probabilistic':
         return [(18, True), (19, True)]
     elif inp == 'Probabilistic+L':
@@ -89,7 +89,7 @@ def f1model_flags(inp: F1Model) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown F1Model: {inp}")
 
 
-def tetopmodel_flags(inp: TeTopModel) -> List[Tuple[int, bool]]:
+def _tetopmodel_flags(inp: TeTopModel) -> List[Tuple[int, bool]]:
     if inp == 'Bil-1985':
         return [(22, True)]
     elif inp == 'TBT-2012':
@@ -98,7 +98,7 @@ def tetopmodel_flags(inp: TeTopModel) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown TeTopModel: {inp}")
 
 
-def dregionmodel_flags(inp: DRegionModel) -> List[Tuple[int, bool]]:
+def _dregionmodel_flags(inp: DRegionModel) -> List[Tuple[int, bool]]:
     if inp == 'IRI-90':
         return [(23, True)]
     elif inp == 'FT-2001 & DRS-1995':
@@ -107,7 +107,7 @@ def dregionmodel_flags(inp: DRegionModel) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown DRegionModel: {inp}")
 
 
-def topsidemodel_flags(inp: TopsideModel) -> List[Tuple[int, bool]]:
+def _topsidemodel_flags(inp: TopsideModel) -> List[Tuple[int, bool]]:
     if inp == 'IRI-90':
         return [(28, True), (29, True)]
     elif inp == 'IRICor':
@@ -120,7 +120,7 @@ def topsidemodel_flags(inp: TopsideModel) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown TopsideModel: {inp}")
 
 
-def hmF2model_flags(inp: HmF2Model) -> List[Tuple[int, bool]]:
+def _hmF2model_flags(inp: HmF2Model) -> List[Tuple[int, bool]]:
     if inp == 'IRI-90':
         return [(38, True), (39, True)]
     elif inp == 'AMTB':
@@ -133,7 +133,7 @@ def hmF2model_flags(inp: HmF2Model) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown HmF2Model: {inp}")
 
 
-def iontempmodel_flags(inp: IonTempModel) -> List[Tuple[int, bool]]:
+def _iontempmodel_flags(inp: IonTempModel) -> List[Tuple[int, bool]]:
     if inp == 'Tru-2021':
         return [(47, True)]
     elif inp == 'Bil-1981':
@@ -142,7 +142,7 @@ def iontempmodel_flags(inp: IonTempModel) -> List[Tuple[int, bool]]:
         raise ValueError(f"Unknown IonTempModel: {inp}")
 
 
-def plasmaspheremodel_flags(inp: PlasmasphereModel) -> List[Tuple[int, bool]]:
+def _plasmaspheremodel_flags(inp: PlasmasphereModel) -> List[Tuple[int, bool]]:
     if inp == 'Ozhogin':
         return [(48, True)]
     elif inp == 'Gallagher':
@@ -427,18 +427,18 @@ class ComputedSettings:
         jf[49] = settings.plasmapause
 
         funcs = [
-            b0b1model_flags,
-            fof2model_flags,
-            ni_model_flags,
-            nemode_flags,
-            magfield_flags,
-            f1model_flags,
-            tetopmodel_flags,
-            dregionmodel_flags,
-            topsidemodel_flags,
-            hmF2model_flags,
-            iontempmodel_flags,
-            plasmaspheremodel_flags,
+            _b0b1model_flags,
+            _fof2model_flags,
+            _ni_model_flags,
+            _nemode_flags,
+            _magfield_flags,
+            _f1model_flags,
+            _tetopmodel_flags,
+            _dregionmodel_flags,
+            _topsidemodel_flags,
+            _hmF2model_flags,
+            _iontempmodel_flags,
+            _plasmaspheremodel_flags,
         ]
         vals = [
             settings.b0_b1_model,
