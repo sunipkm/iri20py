@@ -1,8 +1,7 @@
 # %%
 from __future__ import annotations
-from numbers import Number
-from typing import Iterable, SupportsAbs, Tuple, SupportsFloat as Numeric, Callable
-from numpy import arctan, cumsum, float32, interp, isnan, linspace, ndarray, tan, pi as M_PI, asarray, all, tanh
+from typing import Tuple, SupportsFloat as Numeric
+from numpy import cumsum, float32, linspace, ndarray, tanh
 from datetime import datetime
 
 """
