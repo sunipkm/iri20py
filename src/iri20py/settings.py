@@ -7,8 +7,11 @@ from pathlib import Path
 
 import numpy as np
 
-B0B1Model = Literal['Bil-2000', 'ABT-2009',
-                    'Gulayeva-1987']  # [3, 30] [T,T], [F,T], [F,F]
+B0B1Model = Literal[
+    'Bil-2000',
+    'ABT-2009',
+    'Gulayeva-1987'
+]  # [3, 30] [T,T], [F,T], [F,F]
 FoF2Model = Literal['CCIR', 'URSI']  # [4] T, F
 NiModel = Literal['DS-95 & DY-85', 'RBV-2010 & TBT-2015']  # [5] T, F
 NeMode = Literal['Standard', 'Lay-function']  # [10] T, F
@@ -326,7 +329,8 @@ class Settings:
         import json
         from dataclasses import asdict
         settings = asdict(self)
-        settings['logfile'] = str(self.logfile) if self.logfile is not None else None
+        settings['logfile'] = str(
+            self.logfile) if self.logfile is not None else None
         return json.dumps(settings)
 
 
@@ -341,6 +345,18 @@ class ComputedSettings:
 
     @staticmethod
     def from_settings(settings: Settings) -> ComputedSettings:
+        """Build a ComputedSettings low-level settings
+        structure from a Settings structure.
+
+        Args:
+            settings (Settings): IRI-2020 Settings.
+
+        Raises:
+            IsADirectoryError: If logfile is a directory.
+
+        Returns:
+            ComputedSettings: Low-level settings.
+        """
         jf = np.full(50, True, dtype=bool)
         oarr = np.full(100, -1, dtype=float)
         jf[11] = False
@@ -358,6 +374,8 @@ class ComputedSettings:
             oarr[14] = settings.te_mode[0]
             oarr[15] = settings.te_mode[1]
         if settings.logfile is not None and settings.logfile != '':
+            if settings.logfile.exists() and settings.logfile.is_dir():
+                raise IsADirectoryError(settings.logfile)
             logfile_str = str(settings.logfile)
         else:
             logfile_str = '/dev/null'
@@ -437,7 +455,7 @@ class ComputedSettings:
             settings.plasmasphere,
         ]
         for func, val in zip(funcs, vals):
-            for index, flag in func(val):
+            for index, flag in func(val): # type: ignore
                 jf[index] = flag
 
         # Additional flags and oarr values would be set here...

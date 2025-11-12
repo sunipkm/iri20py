@@ -279,6 +279,10 @@ C 2020.34 09/15/25 iri_web: dhour->xhour(=xvar(8)+iut*25.)
 C 2020.34 09/15/25 iri_web: including MODA and int for 
 C 2020.G1 11/04/25 iri_sub: arbitrary height array, file dir inp
 C 2020.G1 11/04/25 iri_web: removed
+c 2020.G1 11/11/25 iri_sub: Bugfix: HTETI would not be computed
+c                  leading to wrong Ti values that would follow
+c                  Tn below ~200km and Te above ~200km, creating
+c                  a discontinuous, non-physical Ti profile.
 C
 C*****************************************************************
 C********* INTERNATIONAL REFERENCE IONOSPHERE (IRI). *************

@@ -7,3 +7,4 @@ messages.txt
 test.txt
 iri_log.txt
 *.png
+**/.mypy_cache

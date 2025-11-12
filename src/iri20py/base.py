@@ -4,7 +4,6 @@ from .iri20shim import iri20_init, iri20_eval  # type: ignore
 from datetime import datetime, UTC, timedelta
 import os
 from pathlib import Path
-import sys
 from dataclasses import dataclass
 from time import perf_counter_ns
 from typing import Any, Dict, Optional, Tuple, SupportsFloat as Numeric
@@ -45,12 +44,12 @@ class Iri2020(Singleton):
         self.settings: Settings = settings or Settings()
         self._benchmark = False
         self._call = 0
-        self._setup = 0
-        self._fortran = 0
-        self._ds_build = 0
-        self._ds_attrib = 0
-        self._ds_settings = 0
-        self._total = 0
+        self._setup = 0.0
+        self._fortran = 0.0
+        self._ds_build = 0.0
+        self._ds_attrib = 0.0
+        self._ds_settings = 0.0
+        self._total = 0.0
 
     @property
     def benchmark(self) -> bool:
@@ -397,7 +396,7 @@ class Iri2020(Singleton):
             lon (Numeric): Geographic longitude
             alt (np.ndarray): Altitude in kilometers
             year (int): Year (four digits)
-            day (int): Day of the year (1-365/366)
+            day (int): Day of the year (1-365 or 366)
             ut (Numeric): Universal time in seconds
             settings (Optional[Settings  |  ComputedSettings], optional): Settings to use. Defaults to None.
 
@@ -423,7 +422,8 @@ class Iri2020(Singleton):
 def test():
     import matplotlib.pyplot as plt
     from pprint import pprint
-    from iri20py import Iri2020, Settings, alt_grid
+    from iri20py import Iri2020, alt_grid
+    from iri20py.settings import Settings
     settings = Settings(logfile=Path('iri_log.txt'))
     iri = Iri2020()
     date = datetime(2022, 3, 21, 12, 0, 0, tzinfo=UTC)

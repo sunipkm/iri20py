@@ -38,4 +38,4 @@ dependencies = ['meson', 'ninja', 'numpy >= 1.14.5', 'xarray']
 homepage = "https://github.com/sunipkm/iri20py"
 
 [project.scripts]
-Iri2020Test = "iri20py.base:test"
+Iri20Test = "iri20py.base:test"

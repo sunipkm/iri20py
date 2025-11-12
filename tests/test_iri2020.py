@@ -17,14 +17,15 @@ matplotlib.rc(
         'serif': ['Times' if usetex else 'Times New Roman']
     }
 )
-# for Palatino and other serif fonts use:
-# rc('font',**{'family':'serif','serif':['Palatino']})
 matplotlib.rc('text', usetex=usetex)
 # %%
 MON = 12
 iri20 = Iri2020()
-_, ds20 = iri20.lowlevel(
-    -80, 45, np.arange(60,801,5), 2020, 10, 10.2*3600
+date = time = datetime(2022, 3, 22, 18, 0).astimezone(UTC)
+glat = 42.6
+glon = -71.2
+_, ds20 = iri20.evaluate(
+    date, glat, glon, np.arange(60, 801, 5)
 )
 # %%
 ig, ax = plt.subplots(figsize=(6.4, 4.8), dpi=300)

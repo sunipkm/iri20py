@@ -10,8 +10,15 @@ runtime. The wrapper automatically retrieves the latest available [`ig_rz.dat`](
 and [`apf107.dat`](https://chain-new.chain-project.net/echaim_downloads/apf107.dat) files on import.
 
 ## Installation
+A Fortran compiler is *REQUIRED* to build the FORTRAN extension module.
+
+### From [PyPI](https://pypi.org/project/iri20py/)
 ```sh
-pip install iri20py git+https://github.com/sunipkm/iri20py
+pip install iri20py
+```
+### From [GitHub](https://github.com/sunipkm/iri20py)
+```sh
+pip install iri20py@git+https://github.com/sunipkm/iri20py
 ```
 
 ## Usage
@@ -60,10 +67,10 @@ If you use this code in your work, please cite the repository:
 @software{sunipkm_iri20py_2025,
   author       = {Sunip K. Mukherjee},
   title        = {{iri20py}: A Python Wrapper for the IRI-2020 Empirical Model},
-  month        = jun,
+  month        = nov,
   year         = 2025,
   publisher    = {GitHub},
-  version      = {v0.0.1},
+  version      = {v0.0.2},
   doi          = {https://zenodo.org/badge/latestdoi/1089134543},
   url          = {https://github.com/sunipkm/iri20py},
 }

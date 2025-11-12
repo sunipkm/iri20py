@@ -2,10 +2,11 @@
 from __future__ import annotations
 from pathlib import Path
 import ftplib
+from typing import Optional
+import warnings
 import requests
 from urllib.parse import urlparse
 from datetime import datetime, timedelta
-import subprocess
 import socket
 import requests.exceptions
 import numpy as np
@@ -22,9 +23,9 @@ TIMEOUT = 15  # seconds
 logger = logging.getLogger(__name__)  # module logger
 
 
-def check_files():
-    with importlib.resources.path(__package__, "__init__.py") as fn:
-        path = fn.parent / "data"
+def check_files(url: str = URL):
+    with importlib.resources.path(__package__, "__init__.py") as fdir:  # type: ignore
+        path = fdir.parent / "data"
         if not path.is_dir():
             raise NotADirectoryError(path)
 
@@ -38,8 +39,9 @@ def check_files():
             finf = fpath.stat()
             mod_date = datetime.fromtimestamp(finf.st_mtime)
             if datetime.now() - mod_date > timedelta(days=1):
-                logger.warning(
-                    f"Warning: {file} is older than 1 day. Consider updating.")
+                warnings.warn(
+                    f"Warning: {file} is older than 1 day. Updating."
+                )
                 will_download = True
         if will_download:
             url = f'{URL}/{file}'
@@ -98,7 +100,7 @@ def ftp_download(url: str, fn: Path):
         raise ConnectionError(f"Could not download {url} to {fn}")
 
 
-def exist_ok(fn: Path, maxage: timedelta = None) -> bool:
+def exist_ok(fn: Path, maxage: Optional[timedelta] = None) -> bool:
     if not fn.is_file():
         return False
 
