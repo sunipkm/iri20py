@@ -61,6 +61,11 @@ plt.show()
 
 The dataset is NetCDF4 compatible.
 
+## Example Plot
+An example script to generate the following plot is available in the
+[`tests/test_iri2020.py`](tests/test_iri2020.py) file.
+![Example IRI-2020 Output](tests/iri20.png)
+
 # Citation
 If you use this code in your work, please cite the repository:
 ```bibtex
