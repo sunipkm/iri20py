@@ -3,7 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 project('iri20py', 'c',
-  version : '1.0',
+  version: run_command(
+    ['python3', '-m', 'setuptools_scm'],
+    check: true
+  ).stdout().strip(),
   license: 'BSD-3',
   meson_version: '>=0.64.0',
   default_options : ['warning_level=2'],

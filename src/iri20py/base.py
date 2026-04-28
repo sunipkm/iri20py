@@ -13,6 +13,7 @@ from xarray import Dataset
 
 from .utils import Singleton, iridate
 from .settings import Settings, ComputedSettings
+from . import __version__
 
 DIRNAME = Path(os.path.dirname(__file__))
 DATADIR = DIRNAME / "data"
@@ -356,6 +357,7 @@ class Iri2020(Singleton):
             self._ds_attrib += (ds_attrib - ds_build)*1e-6
             self._ds_settings += (ds_settings - ds_attrib)*1e-6
             self._total += (ds_settings - start)*1e-6
+        ds.attrs['version'] = f'IRI-2020 v{__version__}'
         return ds
 
     def evaluate(
@@ -452,6 +454,7 @@ def test():
         set
     )
     fig, ax = plt.subplots(1, 2, sharey=True)
+    fig.suptitle(f'{ds1.attrs["version"]} Ne Density Profiles')
     ds1.Ne.plot(ax=ax[0], y='alt_km')
     ds2.Ne.plot(ax=ax[1], y='alt_km')
     ax[0].set_xscale('log')

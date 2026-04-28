@@ -1,7 +1,7 @@
 # %%
 from __future__ import annotations
 from numbers import Number
-from sys import platform
+import platform
 from typing import List, Literal, Optional, Tuple
 from dataclasses import dataclass
 from pathlib import Path
