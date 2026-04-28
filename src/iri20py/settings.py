@@ -1,6 +1,7 @@
 # %%
 from __future__ import annotations
 from numbers import Number
+from sys import platform
 from typing import List, Literal, Optional, Tuple
 from dataclasses import dataclass
 from pathlib import Path
@@ -27,6 +28,8 @@ TopsideModel = Literal['IRI-90', 'IRICor', 'NeQuick',
 HmF2Model = Literal['IRI-90', 'AMTB', 'Shubin', 'None']
 IonTempModel = Literal['Tru-2021', 'Bil-1981']  # [47] T, F
 PlasmasphereModel = Literal['Ozhogin', 'Gallagher']  # [48] T, F
+
+LOGFILE_NUL = 'nul' if platform.system() == 'Windows' else '/dev/null'
 
 
 def _b0b1model_flags(inp: B0B1Model) -> List[Tuple[int, bool]]:
@@ -378,7 +381,7 @@ class ComputedSettings:
                 raise IsADirectoryError(settings.logfile)
             logfile_str = str(settings.logfile)
         else:
-            logfile_str = '/dev/null'
+            logfile_str = LOGFILE_NUL
         if settings.foF1 is not None:
             jf[12] = False
             oarr[2] = settings.foF1

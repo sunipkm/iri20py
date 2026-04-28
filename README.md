@@ -9,8 +9,55 @@ associated with IRI-2020 are included in the [`data`](src/IRI2020/data) folder a
 runtime. The wrapper automatically retrieves the latest available [`ig_rz.dat`](https://chain-new.chain-project.net/echaim_downloads/ig_rz.dat)
 and [`apf107.dat`](https://chain-new.chain-project.net/echaim_downloads/apf107.dat) files on import.
 
+## Prerequisites
+A Fortran compiler is **REQUIRED**.
+### Linux
+Ensure that you have the following development packages installed:
+- `build-essential` (for `gcc`, `g++`, `make`, etc.)
+- `gfortran` (Fortran compiler)
+### macOS
+Ensure that you have the Xcode Command Line Tools installed. You can install them by running:
+```sh
+xcode-select --install
+```
+Install [`homebrew`](https://brew.sh/) if you haven't already, and then install `gfortran`:
+```sh
+brew install gfortran
+```
+<b>Note:</b> For macOS Big Sur and above, you may need to add the following line to your environment script (`~/.zshrc` if using ZSH, or the relevant shell init script):
+```sh
+export LIBRARY_PATH="$LIBRARY_PATH:/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib"
+```
+Then reopen the terminal. This fixes the issue where `-lSystem` fails for `gfortran`.
+ 
+### Windows (amd64 or x86_64 targets)
+On Windows, MSYS2 is the preferred distribution for installing the Fortran compiler toolchain (for GNU Compiler Collection).
+- Install [MSYS2](https://www.msys2.org/).
+  Note the directory where MSYS2 was installed (defaults to `C:\msys64`) [referred to as `MSYS_INSTALL_DIR`].
+  It is not recommended to change this directory.
+- Launch the MSYS2 terminal (MSYS2 MSYS application on the start menu)
+- Update MSYS2 environment (assuming fresh install):
+  ```sh
+  pacman -Syu # Restart the terminal
+  pacman -Su  # Update packages
+  ```
+- Install the GNU Compiler Collection:
+  ```sh
+  pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-gcc-fortran
+  ```
+- Add `MSYS_INSTALL_DIR\ucrt\bin` (defaults to `C:\msys64\ucrt\bin`) to `PATH`:
+  - Search for `env` in the Start menu,
+  - Select "Edit the system environment variables",
+  - Click "Environment Variables",
+  - Double click 'Path' under 'User variables for USER'
+  - Click "New"
+  - Type in, or paste the full path to `ucrt\bin` (defaults to `C:\msys64\ucrt\bin`)
+  - Click "Ok" on the environment variable windows to save the changes.
+
+Change the toolchain names accordingly for Windows arm64.
+This platform has not been tested and is not officially supported.
+
 ## Installation
-A Fortran compiler is *REQUIRED* to build the FORTRAN extension module.
 
 ### From [PyPI](https://pypi.org/project/iri20py/)
 ```sh
@@ -22,6 +69,12 @@ pip install iri20py@git+https://github.com/sunipkm/iri20py
 ```
 
 ## Usage
+### Quick Test
+On the command line, execute `Iri20Test`.
+This should produce a plot of noon and midnight electron density profiles.
+
+### Python
+
 ```py
 from iri20py import Iri2020, alt_grid
 from datetime import datetime, UTC
