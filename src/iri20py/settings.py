@@ -2,7 +2,7 @@
 from __future__ import annotations
 from numbers import Number
 import platform
-from typing import List, Literal, Optional, Tuple
+from typing import Any, Callable, List, Literal, Optional, Tuple
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,12 +17,16 @@ FoF2Model = Literal['CCIR', 'URSI']  # [4] T, F
 NiModel = Literal['DS-95 & DY-85', 'RBV-2010 & TBT-2015']  # [5] T, F
 NeMode = Literal['Standard', 'Lay-function']  # [10] T, F
 MagField = Literal['IGRF', 'POGO68']  # [17] T, F
-F1Model = Literal['Probabilistic', 'Probabilistic+L',
-                  'Classic', 'None']  # [18, 19] [T,T], [T,F], [F,T], [F,F]
+F1Model = Literal[
+    'Probabilistic', 'Probabilistic+L',
+    'Classic', 'None',
+]  # [18, 19] [T,T], [T,F], [F,T], [F,F]
 TeTopModel = Literal['Bil-1985', 'TBT-2012']  # [22] T, F
 DRegionModel = Literal['IRI-90', 'FT-2001 & DRS-1995']  # [23] T, F
-TopsideModel = Literal['IRI-90', 'IRICor', 'NeQuick',
-                       'IRICor2']  # [28,29] [T,T], [F,T], [F,F], [T,F]
+TopsideModel = Literal[
+    'IRI-90', 'IRICor',
+    'NeQuick', 'IRICor2',
+]  # [28,29] [T,T], [F,T], [F,F], [T,F]
 
 # [38,39] [T, T], [F, T], [F, F], [T, F]
 HmF2Model = Literal['IRI-90', 'AMTB', 'Shubin', 'None']
@@ -429,7 +433,7 @@ class ComputedSettings:
         jf[46] = settings.cgm_compute
         jf[49] = settings.plasmapause
 
-        funcs = [
+        funcs: List[Callable[[Any], List[Tuple[int, bool]]]] = [
             _b0b1model_flags,
             _fof2model_flags,
             _ni_model_flags,
@@ -458,7 +462,7 @@ class ComputedSettings:
             settings.plasmasphere,
         ]
         for func, val in zip(funcs, vals):
-            for index, flag in func(val): # type: ignore
+            for index, flag in func(val):
                 jf[index] = flag
 
         # Additional flags and oarr values would be set here...

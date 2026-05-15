@@ -37,14 +37,21 @@ colors = ['r', 'g', 'b', 'm']
 labels = []
 lines = []
 for spec, color, desc in zip(species, colors, descs):
-    l21, = ds20[spec].plot(y='alt_km', ax=ax, color=color, lw=0.75)
+    l21, = ds20[spec].plot(
+        y='alt_km', ax=ax,
+        color=color,
+        lw=0.75,
+    )  # type: ignore
     lines.extend([l21])
     labels.extend([f'${desc}$'])
 ax.set_title('IRI-2020')
-l21, = ds20['Te'].plot(y='alt_km', ax=tax, color='k', lw=0.75)
+l21, = ds20['Te'].plot(y='alt_km', ax=tax, color='k', lw=0.75)  # type: ignore
 lines.extend([l21])
 labels.extend(['$T_e$'])
-l21, = ds20['Ti'].plot(y='alt_km', ax=tax, color='c', alpha=0.7, lw=0.75)
+l21, = ds20['Ti'].plot(
+    y='alt_km', ax=tax, color='c',
+    alpha=0.7, lw=0.75,
+)  # type: ignore
 lines.extend([l21])
 labels.extend(['$T_i$'])
 ax.set_xscale('log')

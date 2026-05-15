@@ -1,6 +1,9 @@
 from importlib.metadata import version
 
-__version__ = version("iri20py")
+try:
+    __version__ = version("iri20py")
+except Exception:
+    __version__ = "unknown"
 
 from .download import check_files
 from .base import Iri2020
